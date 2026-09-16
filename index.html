@@ -153,6 +153,11 @@
     display: block;
   }
 
+  .viewfinder video[hidden],
+  .viewfinder img.frame[hidden] {
+    display: none;
+  }
+
   .idle-panel, .building-panel, .done-panel, .error-panel {
     display: flex;
     flex-direction: column;
