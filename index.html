@@ -666,7 +666,18 @@
     return `contact-sheet-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.pdf`;
   }
 
+  function sanitizeFilename(name) {
+    const cleaned = name.trim().replace(/[\\/:*?"<>|]/g, "-");
+    return cleaned || "contact-sheet";
+  }
+
   saveBtn.addEventListener("click", () => {
+    const defaultName = timestampedFilename().replace(/\.pdf$/i, "");
+    const chosen = window.prompt("Save PDF as:", defaultName);
+    if (chosen === null) return;
+    let filename = sanitizeFilename(chosen);
+    if (!/\.pdf$/i.test(filename)) filename += ".pdf";
+
     saveBtn.disabled = true;
     saveHint.textContent = `Assembling ${keptImages.length} page${keptImages.length === 1 ? "" : "s"} into one PDF…`;
     saveHint.classList.remove("error");
@@ -686,7 +697,6 @@
     });
 
     const blob = doc.output("blob");
-    const filename = timestampedFilename();
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
