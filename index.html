@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contact Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: #f1efe6;
+    --surface: #fffdf8;
+    --surface-2: #e9e5d6;
+    --ink: #20241f;
+    --ink-soft: #5b5d52;
+    --line: #d9d4c3;
+    --teal: #0e6b5c;
+    --teal-deep: #0a4f45;
+    --teal-tint: #dbeae6;
+    --flash: #e2762c;
+    --flash-deep: #c4611e;
+    --danger: #b3422f;
+    --danger-tint: #f5e2dd;
+    --focus: #2b7de0;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #14160f;
+      --surface: #1c1f16;
+      --surface-2: #262a1c;
+      --ink: #ece7d8;
+      --ink-soft: #b7b39f;
+      --line: #34382a;
+      --teal: #38b7a2;
+      --teal-deep: #2c9484;
+      --teal-tint: #1c2f2a;
+      --flash: #f0954f;
+      --flash-deep: #d97d38;
+      --danger: #e2836d;
+      --danger-tint: #3a241d;
+      --focus: #6fb0ff;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+  }
+
+  body {
+    padding-block: 28px 48px;
+    padding-inline: 20px;
+    color: var(--ink);
+    font-family: "Source Sans 3", system-ui, sans-serif;
+    display: flex;
+    justify-content: center;
+  }
+
+  .sheet {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 16px;
+  }
+
+  .wordmark {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .wordmark h1 {
+    font-family: "Archivo", sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    letter-spacing: -0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .wordmark p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+  }
+
+  #cameraSelectWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+  }
+
+  #cameraSelectWrap label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  select#cameraSelect {
+    font: 13px "Source Sans 3", sans-serif;
+    padding: 6px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink);
+    max-width: 220px;
+  }
+
+  /* ---- viewfinder mat ---- */
+
+  .mat {
+    background: var(--surface-2);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .viewfinder {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    width: 100%;
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .viewfinder video,
+  .viewfinder img.frame {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #0b0c09;
+    display: block;
+  }
+
+  .idle-panel, .building-panel, .done-panel, .error-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    text-align: center;
+    padding: 28px 22px;
+    max-width: 360px;
+  }
+
+  .lens {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 34%, var(--teal-tint), var(--surface-2) 68%);
+    border: 3px solid var(--teal);
+    position: relative;
+  }
+
+  .lens::after {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border-radius: 50%;
+    background: var(--teal);
+    opacity: 0.35;
+  }
+
+  .idle-panel h2, .building-panel h2, .done-panel h2, .error-panel h2 {
+    font-family: "Archivo", sans-serif;
+    font-size: 17px;
+    margin: 0;
+  }
+
+  .idle-panel p, .building-panel p, .done-panel p, .error-panel p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
+  .caption-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: rgba(20, 22, 15, 0.65);
+    color: #f1efe6;
+  }
+
+  .caption-badge.rec::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--flash);
+    margin-right: 6px;
+  }
+
+  /* ---- action bar ---- */
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  button {
+    font: 600 14px "Source Sans 3", sans-serif;
+    padding: 11px 16px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    flex: 1;
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .btn-primary {
+    background: var(--teal);
+    color: #fefffd;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--teal-deep); }
+
+  .btn-flash {
+    background: var(--flash);
+    color: #2a1204;
+  }
+  .btn-flash:hover:not(:disabled) { background: var(--flash-deep); }
+
+  .btn-outline {
+    background: transparent;
+    border-color: var(--line);
+    color: var(--ink);
+  }
+  .btn-outline:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
+
+  /* ---- contact sheet strip ---- */
+
+  .strip-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+
+  .strip-head h2 {
+    font-family: "Archivo", sans-serif;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin: 0;
+  }
+
+  #pageCount {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  #thumbs {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 12px 4px 6px;
+  }
+
+  .thumb-empty {
+    font-size: 13px;
+    color: var(--ink-soft);
+    padding: 18px 0;
+  }
+
+  .thumb {
+    position: relative;
+    flex: none;
+    width: 78px;
+  }
+
+  .thumb-frame {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .thumb-frame::before, .thumb-frame::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0;
+    height: 6px;
+    background-image: radial-gradient(circle, var(--paper) 2px, transparent 2.2px);
+    background-size: 11px 100%;
+    background-repeat: repeat-x;
+  }
+  .thumb-frame::before { top: 0; }
+  .thumb-frame::after { bottom: 0; }
+
+  .thumb-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  .thumb-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  .thumb-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    flex: none;
+    border-radius: 50%;
+    background: rgba(20, 22, 15, 0.7);
+    color: #fff;
+    border: none;
+    font-size: 13px;
+    line-height: 1;
+  }
+
+  /* ---- save bar ---- */
+
+  .save-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .save-bar .hint {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+
+  .save-bar .hint.error {
+    color: var(--danger);
+  }
+
+  footer {
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  @media (max-width: 460px) {
+    header { flex-direction: column; align-items: flex-start; }
+    #cameraSelectWrap { align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+  <header>
+    <div class="wordmark">
+      <h1>Contact Sheet</h1>
+      <p>Photograph pages, keep the good ones, get one PDF.</p>
+    </div>
+    <div id="cameraSelectWrap" hidden>
+      <label for="cameraSelect">Camera</label>
+      <select id="cameraSelect"></select>
+    </div>
+  </header>
+
+  <div class="mat">
+    <div class="viewfinder" id="viewfinder">
+      <div class="idle-panel" id="idlePanel">
+        <div class="lens"></div>
+        <h2>Enable your camera</h2>
+        <p>One-time permission for this page. Nothing leaves your device until you choose to save the PDF.</p>
+        <button class="btn-primary" id="enableCameraBtn" style="flex:none; padding-inline: 22px;">Enable Camera</button>
+      </div>
+    </div>
+    <div class="actions" id="liveActions" hidden>
+      <button class="btn-flash" id="takePictureBtn">Take Picture</button>
+    </div>
+    <div class="actions" id="reviewActions" hidden>
+      <button class="btn-outline" id="retakeBtn">Retake</button>
+      <button class="btn-primary" id="keepBtn">Keep This Page</button>
+    </div>
+  </div>
+
+  <section>
+    <div class="strip-head">
+      <h2>Kept pages</h2>
+      <span id="pageCount">PAGES: 0</span>
+    </div>
+    <div id="thumbs">
+      <p class="thumb-empty" id="thumbsEmpty">Pages you keep will line up here, left to right.</p>
+    </div>
+  </section>
+
+  <div class="save-bar">
+    <button class="btn-primary" id="saveBtn" disabled style="padding-block: 13px;">Save PDF</button>
+    <p class="hint" id="saveHint">Take at least one picture to build a PDF.</p>
+  </div>
+
+  <footer>
+    Save the PDF here, then open your assignment's upload area and attach the file yourself.
+  </footer>
+</div>
+
+<script src="libs/jspdf.umd.min.js"></script>
+<script>
+(function () {
+  const STORAGE_KEY = "contactSheetCameraId";
+
+  const idlePanel = document.getElementById("idlePanel");
+  const viewfinder = document.getElementById("viewfinder");
+  const enableCameraBtn = document.getElementById("enableCameraBtn");
+  const cameraSelectWrap = document.getElementById("cameraSelectWrap");
+  const cameraSelect = document.getElementById("cameraSelect");
+  const liveActions = document.getElementById("liveActions");
+  const reviewActions = document.getElementById("reviewActions");
+  const takePictureBtn = document.getElementById("takePictureBtn");
+  const retakeBtn = document.getElementById("retakeBtn");
+  const keepBtn = document.getElementById("keepBtn");
+  const thumbsEl = document.getElementById("thumbs");
+  const thumbsEmpty = document.getElementById("thumbsEmpty");
+  const pageCountEl = document.getElementById("pageCount");
+  const saveBtn = document.getElementById("saveBtn");
+  const saveHint = document.getElementById("saveHint");
+
+  let currentStream = null;
+  let videoEl = null;
+  let pendingFrame = null;
+  const keptImages = []; // { dataUrl, width, height }
+
+  function setViewfinder(node) {
+    viewfinder.innerHTML = "";
+    viewfinder.appendChild(node);
+  }
+
+  function stopStream() {
+    if (currentStream) {
+      currentStream.getTracks().forEach((t) => t.stop());
+      currentStream = null;
+    }
+  }
+
+  async function startStream(deviceId) {
+    stopStream();
+    const constraints = deviceId
+      ? { video: { deviceId: { exact: deviceId } }, audio: false }
+      : { video: { facingMode: { ideal: "environment" } }, audio: false };
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    currentStream = stream;
+
+    videoEl = document.createElement("video");
+    videoEl.autoplay = true;
+    videoEl.playsInline = true;
+    videoEl.muted = true;
+    videoEl.srcObject = stream;
+    setViewfinder(videoEl);
+
+    const badge = document.createElement("span");
+    badge.className = "caption-badge rec";
+    badge.textContent = "LIVE";
+    viewfinder.appendChild(badge);
+
+    liveActions.hidden = false;
+    reviewActions.hidden = true;
+    return stream;
+  }
+
+  async function populateCameraList(selectedId) {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const cameras = devices.filter((d) => d.kind === "videoinput");
+    cameraSelect.innerHTML = "";
+    cameras.forEach((cam, i) => {
+      const opt = document.createElement("option");
+      opt.value = cam.deviceId;
+      opt.textContent = cam.label || `Camera ${i + 1}`;
+      cameraSelect.appendChild(opt);
+    });
+    cameraSelectWrap.hidden = cameras.length <= 1;
+    if (selectedId && cameras.some((c) => c.deviceId === selectedId)) {
+      cameraSelect.value = selectedId;
+    }
+  }
+
+  enableCameraBtn.addEventListener("click", async () => {
+    enableCameraBtn.disabled = true;
+    enableCameraBtn.textContent = "Requesting access…";
+    try {
+      let preferredId = null;
+      try { preferredId = localStorage.getItem(STORAGE_KEY); } catch (_) {}
+      const stream = await startStream(preferredId || undefined);
+      const activeId = stream.getVideoTracks()[0]?.getSettings().deviceId;
+      await populateCameraList(preferredId || activeId);
+    } catch (err) {
+      const panel = document.createElement("div");
+      panel.className = "error-panel";
+      panel.innerHTML = `<h2>Camera access didn't work</h2><p>${err.message || "Permission was blocked or no camera was found."}</p>`;
+      const retry = document.createElement("button");
+      retry.className = "btn-primary";
+      retry.style.flex = "none";
+      retry.style.paddingInline = "22px";
+      retry.textContent = "Try Again";
+      retry.addEventListener("click", () => setViewfinder(idlePanel));
+      panel.appendChild(retry);
+      setViewfinder(panel);
+    }
+  });
+
+  cameraSelect.addEventListener("change", async () => {
+    const id = cameraSelect.value;
+    try { localStorage.setItem(STORAGE_KEY, id); } catch (_) {}
+    await startStream(id);
+  });
+
+  takePictureBtn.addEventListener("click", () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = videoEl.videoWidth;
+    canvas.height = videoEl.videoHeight;
+    canvas.getContext("2d").drawImage(videoEl, 0, 0);
+    pendingFrame = {
+      dataUrl: canvas.toDataURL("image/png"),
+      width: canvas.width,
+      height: canvas.height,
+    };
+
+    const img = document.createElement("img");
+    img.className = "frame";
+    img.src = pendingFrame.dataUrl;
+    setViewfinder(img);
+    const badge = document.createElement("span");
+    badge.className = "caption-badge";
+    badge.textContent = `PAGE ${keptImages.length + 1} — REVIEW`;
+    viewfinder.appendChild(badge);
+
+    liveActions.hidden = true;
+    reviewActions.hidden = false;
+  });
+
+  retakeBtn.addEventListener("click", () => {
+    pendingFrame = null;
+    setViewfinder(videoEl);
+    const badge = document.createElement("span");
+    badge.className = "caption-badge rec";
+    badge.textContent = "LIVE";
+    viewfinder.appendChild(badge);
+    liveActions.hidden = false;
+    reviewActions.hidden = true;
+  });
+
+  keepBtn.addEventListener("click", () => {
+    keptImages.push(pendingFrame);
+    pendingFrame = null;
+    renderThumbs();
+    setViewfinder(videoEl);
+    const badge = document.createElement("span");
+    badge.className = "caption-badge rec";
+    badge.textContent = "LIVE";
+    viewfinder.appendChild(badge);
+    liveActions.hidden = false;
+    reviewActions.hidden = true;
+  });
+
+  function renderThumbs() {
+    pageCountEl.textContent = `PAGES: ${String(keptImages.length).padStart(2, "0")}`;
+    saveBtn.disabled = keptImages.length === 0;
+    saveHint.textContent = keptImages.length === 0
+      ? "Take at least one picture to build a PDF."
+      : `Ready — ${keptImages.length} page${keptImages.length === 1 ? "" : "s"} will be saved as one PDF.`;
+    saveHint.classList.remove("error");
+
+    thumbsEl.innerHTML = "";
+    if (keptImages.length === 0) {
+      thumbsEl.appendChild(thumbsEmpty);
+      return;
+    }
+
+    keptImages.forEach((img, index) => {
+      const wrap = document.createElement("div");
+      wrap.className = "thumb";
+
+      const frame = document.createElement("div");
+      frame.className = "thumb-frame";
+      const thumbImg = document.createElement("img");
+      thumbImg.src = img.dataUrl;
+      frame.appendChild(thumbImg);
+
+      const removeBtn = document.createElement("button");
+      removeBtn.className = "thumb-remove";
+      removeBtn.textContent = "×";
+      removeBtn.title = "Remove this page";
+      removeBtn.addEventListener("click", () => {
+        keptImages.splice(index, 1);
+        renderThumbs();
+      });
+      frame.appendChild(removeBtn);
+
+      const label = document.createElement("div");
+      label.className = "thumb-label";
+      label.textContent = `PAGE ${index + 1}`;
+
+      wrap.appendChild(frame);
+      wrap.appendChild(label);
+      thumbsEl.appendChild(wrap);
+    });
+  }
+
+  function timestampedFilename() {
+    const d = new Date();
+    const pad = (n) => String(n).padStart(2, "0");
+    return `contact-sheet-${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}.pdf`;
+  }
+
+  saveBtn.addEventListener("click", () => {
+    saveBtn.disabled = true;
+    saveHint.textContent = `Assembling ${keptImages.length} page${keptImages.length === 1 ? "" : "s"} into one PDF…`;
+    saveHint.classList.remove("error");
+
+    const { jsPDF } = window.jspdf;
+    const first = keptImages[0];
+    const doc = new jsPDF({
+      orientation: first.width >= first.height ? "landscape" : "portrait",
+      unit: "px",
+      format: [first.width, first.height],
+    });
+    keptImages.forEach((img, index) => {
+      if (index > 0) {
+        doc.addPage([img.width, img.height], img.width >= img.height ? "landscape" : "portrait");
+      }
+      doc.addImage(img.dataUrl, "PNG", 0, 0, img.width, img.height);
+    });
+
+    const blob = doc.output("blob");
+    const filename = timestampedFilename();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+
+    const panel = document.createElement("div");
+    panel.className = "done-panel";
+    panel.innerHTML = `<h2>Saved as ${filename}</h2><p>Check your Downloads folder, then open your assignment's upload area, choose this file (or drag it in), and click Submit Assignment.</p>`;
+    const again = document.createElement("button");
+    again.className = "btn-outline";
+    again.style.flex = "none";
+    again.style.paddingInline = "22px";
+    again.textContent = "Start a New Sheet";
+    again.addEventListener("click", () => {
+      keptImages.length = 0;
+      renderThumbs();
+      if (currentStream) {
+        setViewfinder(videoEl);
+        const badge = document.createElement("span");
+        badge.className = "caption-badge rec";
+        badge.textContent = "LIVE";
+        viewfinder.appendChild(badge);
+        liveActions.hidden = false;
+      } else {
+        setViewfinder(idlePanel);
+      }
+      reviewActions.hidden = true;
+    });
+    panel.appendChild(again);
+    setViewfinder(panel);
+    liveActions.hidden = true;
+    reviewActions.hidden = true;
+  });
+
+  renderThumbs();
+})();
+</script>
+</body>
+</html>
