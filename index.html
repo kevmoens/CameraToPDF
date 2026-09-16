@@ -574,7 +574,11 @@
       retry.style.flex = "none";
       retry.style.paddingInline = "22px";
       retry.textContent = "Try Again";
-      retry.addEventListener("click", showIdle);
+      retry.addEventListener("click", () => {
+        enableCameraBtn.disabled = false;
+        enableCameraBtn.textContent = "Enable Camera";
+        showIdle();
+      });
       panel.appendChild(retry);
       showTransientPanel(panel);
     }
