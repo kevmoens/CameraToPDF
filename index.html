@@ -407,6 +407,9 @@
         <p>One-time permission for this page. Nothing leaves your device until you choose to save the PDF.</p>
         <button class="btn-primary" id="enableCameraBtn" style="flex:none; padding-inline: 22px;">Enable Camera</button>
       </div>
+      <video id="liveVideo" autoplay playsinline muted hidden></video>
+      <img class="frame" id="reviewFrame" alt="Captured page" hidden>
+      <span class="caption-badge rec" id="viewfinderBadge" hidden>LIVE</span>
     </div>
     <div class="actions" id="liveActions" hidden>
       <button class="btn-flash" id="takePictureBtn">Take Picture</button>
@@ -457,14 +460,63 @@
   const pageCountEl = document.getElementById("pageCount");
   const saveBtn = document.getElementById("saveBtn");
   const saveHint = document.getElementById("saveHint");
+  const videoEl = document.getElementById("liveVideo");
+  const reviewFrame = document.getElementById("reviewFrame");
+  const badge = document.getElementById("viewfinderBadge");
 
   let currentStream = null;
-  let videoEl = null;
   let pendingFrame = null;
   const keptImages = []; // { dataUrl, width, height }
 
-  function setViewfinder(node) {
-    viewfinder.innerHTML = "";
+  // The live <video> and review <img> stay in the DOM permanently and are
+  // just shown/hidden — swapping them out via innerHTML used to detach the
+  // <video> from the stream, which some browsers never resumed.
+  function removeTransientPanel() {
+    const existing = document.getElementById("transientPanel");
+    if (existing) existing.remove();
+  }
+
+  function showLive() {
+    removeTransientPanel();
+    idlePanel.hidden = true;
+    reviewFrame.hidden = true;
+    videoEl.hidden = false;
+    badge.hidden = false;
+    badge.className = "caption-badge rec";
+    badge.textContent = "LIVE";
+    liveActions.hidden = false;
+    reviewActions.hidden = true;
+  }
+
+  function showReview(pageNumber) {
+    videoEl.hidden = true;
+    reviewFrame.hidden = false;
+    badge.hidden = false;
+    badge.className = "caption-badge";
+    badge.textContent = `PAGE ${pageNumber} — REVIEW`;
+    liveActions.hidden = true;
+    reviewActions.hidden = false;
+  }
+
+  function showIdle() {
+    removeTransientPanel();
+    videoEl.hidden = true;
+    reviewFrame.hidden = true;
+    badge.hidden = true;
+    idlePanel.hidden = false;
+    liveActions.hidden = true;
+    reviewActions.hidden = true;
+  }
+
+  function showTransientPanel(node) {
+    videoEl.hidden = true;
+    reviewFrame.hidden = true;
+    badge.hidden = true;
+    idlePanel.hidden = true;
+    liveActions.hidden = true;
+    reviewActions.hidden = true;
+    removeTransientPanel();
+    node.id = "transientPanel";
     viewfinder.appendChild(node);
   }
 
@@ -482,21 +534,8 @@
       : { video: { facingMode: { ideal: "environment" } }, audio: false };
     const stream = await navigator.mediaDevices.getUserMedia(constraints);
     currentStream = stream;
-
-    videoEl = document.createElement("video");
-    videoEl.autoplay = true;
-    videoEl.playsInline = true;
-    videoEl.muted = true;
     videoEl.srcObject = stream;
-    setViewfinder(videoEl);
-
-    const badge = document.createElement("span");
-    badge.className = "caption-badge rec";
-    badge.textContent = "LIVE";
-    viewfinder.appendChild(badge);
-
-    liveActions.hidden = false;
-    reviewActions.hidden = true;
+    showLive();
     return stream;
   }
 
@@ -534,9 +573,9 @@
       retry.style.flex = "none";
       retry.style.paddingInline = "22px";
       retry.textContent = "Try Again";
-      retry.addEventListener("click", () => setViewfinder(idlePanel));
+      retry.addEventListener("click", showIdle);
       panel.appendChild(retry);
-      setViewfinder(panel);
+      showTransientPanel(panel);
     }
   });
 
@@ -556,42 +595,20 @@
       width: canvas.width,
       height: canvas.height,
     };
-
-    const img = document.createElement("img");
-    img.className = "frame";
-    img.src = pendingFrame.dataUrl;
-    setViewfinder(img);
-    const badge = document.createElement("span");
-    badge.className = "caption-badge";
-    badge.textContent = `PAGE ${keptImages.length + 1} — REVIEW`;
-    viewfinder.appendChild(badge);
-
-    liveActions.hidden = true;
-    reviewActions.hidden = false;
+    reviewFrame.src = pendingFrame.dataUrl;
+    showReview(keptImages.length + 1);
   });
 
   retakeBtn.addEventListener("click", () => {
     pendingFrame = null;
-    setViewfinder(videoEl);
-    const badge = document.createElement("span");
-    badge.className = "caption-badge rec";
-    badge.textContent = "LIVE";
-    viewfinder.appendChild(badge);
-    liveActions.hidden = false;
-    reviewActions.hidden = true;
+    showLive();
   });
 
   keepBtn.addEventListener("click", () => {
     keptImages.push(pendingFrame);
     pendingFrame = null;
     renderThumbs();
-    setViewfinder(videoEl);
-    const badge = document.createElement("span");
-    badge.className = "caption-badge rec";
-    badge.textContent = "LIVE";
-    viewfinder.appendChild(badge);
-    liveActions.hidden = false;
-    reviewActions.hidden = true;
+    showLive();
   });
 
   function renderThumbs() {
@@ -686,21 +703,13 @@
       keptImages.length = 0;
       renderThumbs();
       if (currentStream) {
-        setViewfinder(videoEl);
-        const badge = document.createElement("span");
-        badge.className = "caption-badge rec";
-        badge.textContent = "LIVE";
-        viewfinder.appendChild(badge);
-        liveActions.hidden = false;
+        showLive();
       } else {
-        setViewfinder(idlePanel);
+        showIdle();
       }
-      reviewActions.hidden = true;
     });
     panel.appendChild(again);
-    setViewfinder(panel);
-    liveActions.hidden = true;
-    reviewActions.hidden = true;
+    showTransientPanel(panel);
   });
 
   renderThumbs();
